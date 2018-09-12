@@ -107,7 +107,7 @@ class AutoSummarizer(object):
         F = MSM / MSE
         p_value = scipy.stats.f.cdf(F, p, n - p - 1)
 
-        return {"F_value": F, "P_value:": p_value}
+        return {"F_value": F, "P_value": p_value}
 
     def calculateT(self, x, residuals, p, params):
         n = len(x)

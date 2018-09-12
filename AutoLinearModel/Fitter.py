@@ -1,9 +1,10 @@
 import numpy as np
 import tensorflow as tf
 import scipy
-from AutoLinearModel.utility import AutoSummarizer
+from utility import AutoSummarizer
 from IPython.display import display
 import pandas as pd
+import datetime
 
 
 class Fitter(object):
@@ -67,10 +68,10 @@ class Fitter(object):
 
         # print("Dur", DurbinWatson)
 
-        df_metric = pd.DataFrame({"SSE": SSE, "AIC": AIC, "BIC": BIC, "R_squared": R_squared, 
-            "R_squared_adjusted": R_squared_adjusted, "DurbinWatson": DurbinWatson,
-            "F_stat": F_stat['F_value'],"F_stat P_value":F_stat['P_value'],"" "ConditionNum": ConditionNum
-            }, index=["value"])
+        df_metric = pd.DataFrame({"SSE": SSE, "AIC": AIC, "BIC": BIC, "R_squared": R_squared,
+                                  "R_squared_adjusted": R_squared_adjusted, "DurbinWatson": DurbinWatson,
+                                  "F_stat": F_stat['F_value'], "F_stat P_value": F_stat['P_value'], "" "ConditionNum": ConditionNum
+                                  }, index=["value"])
 
         def get_df_CI_coef(CI_coeff):
 
@@ -139,7 +140,6 @@ class Fitter(object):
 
         cov_matrix = error_std**2 * np.linalg.inv(np.transpose(x) @ x)
 
-
         t_value = scipy.stats.t.ppf(1 - (1 - confidence) / 2, df=len(x) - n_features - 1)
 
         if self.fit_method == "gradient":
@@ -150,7 +150,7 @@ class Fitter(object):
         tmp_CI = []
 
         for i in range(n_features + 1):
-            try:   
+            try:
                 std = np.sqrt(cov_matrix[i, i])
             except:
                 raise Exception("data is not positive define")
@@ -193,7 +193,6 @@ class tf_linear_regression(object):
 
         self.init = tf.global_variables_initializer()
 
-
         if x.shape[1] != self.n_features:
             raise Exception("n_features is not the same as input x features")
         if self.n_features == 1:
@@ -217,7 +216,7 @@ class tf_linear_regression(object):
         self.params["Weight"] = self.sess.run(self.W)
         self.params["Bias"] = self.sess.run(self.b)
 
-    def partial_fit(self,x,y):
+    def partial_fit(self, x, y):
 
         if x.shape[1] != self.n_features:
             raise Exception("n_features is not the same as input x features")
@@ -246,3 +245,37 @@ class tf_linear_regression(object):
 
         y_pred = self.sess.run(self.pred, feed_dict={self.X: x})
         return y_pred
+
+
+
+if __name__ == '__main__':
+    
+    def genfakedata(dim):
+        x = np.random.randn(*dim)
+        w = np.array(range(dim[1]))
+        b = 5
+        lambda_gen = lambda x: np.dot(x,w) +b + np.random.randn()
+        y = np.array(list(map(lambda_gen,x)))
+        return x,y
+
+
+    X,y = genfakedata([15000,10])
+
+
+    fit_method_list = ["matrix","gradient"]
+
+    for method in fit_method_list:
+        timer = datetime.datetime.now()
+
+        fitter = Fitter(fit_method=method)
+        fitter.fit(X,y,return_params=True)
+        y_pred = fitter.predict(X)
+
+        print("time of {} operation:".format(method),datetime.datetime.now() - timer)
+        
+        fitter.summary()
+        
+
+
+    print("Test pass")
+

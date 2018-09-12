@@ -163,7 +163,7 @@ if __name__ == '__main__':
     X = np.concatenate([x0, x1, x2, x3, x4], axis=1)
     y = -x0 + x1**4 + x2 + 0 * x3 + x4 + x5
 
-    print(X.shape)
+
     regr = LinearRegression().fit(X, y)
     y_pred = regr.predict(X)
 
@@ -172,8 +172,12 @@ if __name__ == '__main__':
 
     print(mse, r2)
 
+    print('='*90)
     AutoDataProcessorObj = AutoDataProcessor(X, y)
 
+
+    print('='*90)
+    print('Start Transform data')
     AutoDataProcessorObj.autoTransformation()
 
     regr = LinearRegression().fit(AutoDataProcessorObj.dfX, y)
@@ -183,5 +187,5 @@ if __name__ == '__main__':
     r2 = r2_score(y, y_pred)
 
     print(mse, r2)
-
+    print('='*90)
     AutoDataProcessor(AutoDataProcessorObj.dfX, y, variableNameList=AutoDataProcessorObj.dfX.columns)

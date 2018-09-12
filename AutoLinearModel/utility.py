@@ -52,7 +52,6 @@ def calculateAdjustedR2(X, y):
     # return r2_score(y, y_hat)
 
 
-
 class AutoSummarizer(object):
     def calculateAIC(self, residuals, p):
         n = len(residuals)
@@ -77,8 +76,6 @@ class AutoSummarizer(object):
         SSE = np.sum((y - y_pred)**2)
         TSS = ESS + SSE
 
-        print(ESS, SSE, TSS)
-
         if adjusted:
             R_squared_adjusted = 1 - (SSE / (n - p - 1)) / (TSS / n - 1)
             return R_squared_adjusted
@@ -88,17 +85,17 @@ class AutoSummarizer(object):
 
     def calculateLogLikelihood(self, y, y_pred):
         n = len(y)
-        SSE = np.sum((y - y_pred)**2)
+        SSE = sum((y - y_pred)**2)
         S2 = SSE / n
         L = (1 / np.sqrt(2 * np.pi * S2)) ** n * np.exp(-SSE / (S2 * 2))
-        print(L)
+        # print(L)
         return np.log(L)
 
     def calculateF(self, y, y_pred, p):
         n = len(y)
 
         y_ave = np.mean(y)
-        SSM = np.sum((y_pred - y_ave)**2)
+        SSM = sum((y_pred - y_ave)**2)
 
         residuals = y - y_pred
         sigma_squared = np.var(residuals)

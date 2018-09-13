@@ -1,5 +1,9 @@
 # AutoLinearModel
 
+## Installation guide
+
+pip install git+https://github.com/cuihanimath/AutoLinearModel
+
 ## Functionality
 - Auto check the assumptions of linear regression
 - Auto recommed remedy methods

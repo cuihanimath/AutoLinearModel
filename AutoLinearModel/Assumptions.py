@@ -215,7 +215,7 @@ class AssumptionOfhomoscedasticity(Assumption):
 		print('-'*90)
 		if self.n < 200:
 			plt.plot(self.residuals)
-			plt.title('residuals histogram')
+			plt.title('residuals plot')
 			plt.show()
 
 		print('Use Levene test because it is less sensitive than the Bartlett test to departures from normality.')

@@ -1,6 +1,3 @@
-from __future__ import print_function
-from builtins import super
-
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -111,21 +108,31 @@ class AssumptionOfNormallyDistributedResiduals(Assumption):
 		super().__init__()
 		self.name = 'The residuals of the model should be normally distributed'
 		self.remedies = 'Transform some features, because the linearity assumption may be violated or the distributions of some of the variables that are random are extremely asymmetric or long-tailed.'
-		self.check(residuals, n)
+		self.residuals = residuals
+		self.n = n
+		self.check(residuals, self.n)
 		
 	def check(self, residuals, n):
-		if n < 200:
-			residuals = np.random.normal(size=100)
-			fig = sm.qqplot(residuals, stats.norm, fit=True, line='45')
-			plt.title('QQ plot')
-			plt.show()
 		
 		WStats, pValue = shapiro(residuals)
 		HypothesisTestObj = HypothesisTest(H0="""the population is normally distributed""", pValue=pValue)
 		#HypothesisTestObj.log()
-		
 		self.violation = 1-HypothesisTestObj.result
+
+	def log(self):
+		print('-'*90)
+		if self.n < 200:
+			self.residuals = np.random.normal(size=100)
+			fig = sm.qqplot(self.residuals, stats.norm, fit=True, line='45')
+			plt.title('QQ plot')
+			plt.show()
+
 		
+		if self.violation == True:
+			print('Assumption: ' + self.name + ', is violated.')
+			print('Recommended remedies: ' + self.remedies)
+		else:
+			print('Assumption: ' + self.name + ', is not violated.')
 
 class AssumptionOfZeroMeanOfResiduals(Assumption):
 	def __init__(self, residuals, n):
@@ -148,15 +155,11 @@ class AssumptionOfIndependentResiduals(Assumption):
 		super().__init__()
 		self.name = 'The residuals of the model should be independent'
 		self.remedies = 'Use a time series model rather than a linear regression model to model the data'
+		self.n = n
+		self.residuals = residuals
 		self.check(residuals, n)
 		
 	def check(self, residuals, n):
-		if n < 200:
-			plot_acf(residuals)
-			plt.title('Autocorrelation Plot')
-			plt.show()
-		
-		print('Implement Durbin Watson to checke the autocorrelation.')
 		tStats = durbin_watson(residuals)
 		pValue = stats.t.sf(np.abs(tStats), n-1)*2
 
@@ -164,26 +167,35 @@ class AssumptionOfIndependentResiduals(Assumption):
 		#HypothesisTestObj.log()
 		
 		self.violation = 1-HypothesisTestObj.result
+
+	def log(self):
+		print('-'*90)
+		if self.n < 200:
+			plot_acf(self.residuals)
+			plt.title('Autocorrelation Plot')
+			plt.show()
+		
+		
+		print('Implement Durbin Watson to checke the autocorrelation.')
+		if self.violation == True:
+			print('Assumption: ' + self.name + ', is violated.')
+			print('Recommended remedies: ' + self.remedies)
+		else:
+			print('Assumption: ' + self.name + ', is not violated.')
 		
 class AssumptionOfhomoscedasticity(Assumption):
 	def __init__(self, residuals, n):
 		super().__init__()
+		self.n = n
+		self.residuals = residuals
 		self.name = 'The residuals should have constant variance'
 		self.remedies = 'Transform the target variable.'
 		self.check(residuals, n)
 		
 	def check(self, residuals, n):
-		print('-'*90)
-		if n < 200:
-			plt.plot(residuals)
-			plt.title('residuals histogram')
-			plt.show()
-			
-		print('Use Levene test because it is less sensitive than the Bartlett test to departures from normality.')
-	   
 		#split the data into chunks of size 40
 		chunks = []
-		size = 50
+		size = 40
 		for i in range(0, n, size):
 			temp = residuals[i:i+size].reshape(-1,)
 			if len(temp) == size:
@@ -191,13 +203,28 @@ class AssumptionOfhomoscedasticity(Assumption):
 			else:
 				chunks[-1] = residuals[i-size:]
 
-		print('generate %s chunks for Levene test'%len(chunks))
+		#print('generate %s chunks for Levene test'%len(chunks))
 		statistics, pValue = stats.levene(*chunks)
 		
 		HypothesisTestObj = HypothesisTest(H0='Variance of each subsets of data is the same', pValue=pValue)
 		#HypothesisTestObj.log()
 		
 		self.violation = 1-HypothesisTestObj.result
+
+	def log(self):
+		print('-'*90)
+		if self.n < 200:
+			plt.plot(self.residuals)
+			plt.title('residuals histogram')
+			plt.show()
+
+		print('Use Levene test because it is less sensitive than the Bartlett test to departures from normality.')
+	   
+		if self.violation == True:
+			print('Assumption: ' + self.name + ', is violated.')
+			print('Recommended remedies: ' + self.remedies)
+		else:
+			print('Assumption: ' + self.name + ', is not violated.')
 
 
 

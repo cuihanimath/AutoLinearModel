@@ -8,6 +8,20 @@ Plz check http://connor-johnson.com/2014/02/18/linear-regression-with-python/ fo
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
+def generateRandomData(n=500):
+    x0 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
+    x1 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
+    x2 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
+    x3 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
+    x4 = 3 * x2 - x1 + np.random.rand(n).reshape(-1, 1) * 2 - 1
+    x5 = np.random.rand(n).reshape(-1, 1) * 2 - 1
+
+    X = np.concatenate([x0, x1, x2, x3, x4], axis=1)
+    y = -x0 + x1**4 + x2 + 0 * x3 + x4 + x5
+
+    print('x4 = 3 * x2 - x1')
+    print('y = -x0 + x1**4 + x2 + 0 * x3 + x4 + x5')
+    return X, y
 
 def calculateBIC(X, y):
     regr = LinearRegression()

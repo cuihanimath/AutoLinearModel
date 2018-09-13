@@ -1,6 +1,3 @@
-from __future__ import print_function
-from builtins import super
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -33,43 +30,17 @@ class AutoDataProcessor:
         y_pred = regr.predict(X)
         self.residuals = y - y_pred
 
-        self.check()
+        self._checkAssumptions()
 
-    def check(self,):
-        print('=' * 90)
-        print(1)
+
+    def _checkAssumptions(self,):
         checkerAssumptionOfDegreesOfFreedom = AssumptionOfDegreesOfFreedom(self.n, self.k,)
-        checkerAssumptionOfDegreesOfFreedom.log()
-
-        print('=' * 90)
-        print(2)
         checkerAssumptionOfLinearRelationship = AssumptionOfLinearRelationship(self.correlationMatrix, self.n, self.variableNameList,)
-        checkerAssumptionOfLinearRelationship.log()
-
-        print('=' * 90)
-        print(3)
         checkerAssumptionOfNoCollinearity = AssumptionOfNoCollinearity(self.correlationMatrix, self.variableNameList,)
-        checkerAssumptionOfNoCollinearity.log()
-
-        print('=' * 90)
-        print(4)
         checkerAssumptionOfNormallyDistributedResiduals = AssumptionOfNormallyDistributedResiduals(self.residuals, self.n, )
-        checkerAssumptionOfNormallyDistributedResiduals.log()
-
-        print('=' * 90)
-        print(5)
         checkerAssumptionOfZeroMeanOfResiduals = AssumptionOfZeroMeanOfResiduals(self.residuals, self.n, )
-        checkerAssumptionOfZeroMeanOfResiduals.log()
-
-        print('=' * 90)
-        print(6)
         checkerAssumptionOfIndependentResiduals = AssumptionOfIndependentResiduals(self.residuals, self.n, )
-        checkerAssumptionOfIndependentResiduals.log()
-
-        print('=' * 90)
-        print(7)
         checkerAssumptionOfhomoscedasticity = AssumptionOfhomoscedasticity(self.residuals, self.n, )
-        checkerAssumptionOfhomoscedasticity.log()
 
         self.assumptionViolationDict = {
             0: checkerAssumptionOfDegreesOfFreedom,
@@ -81,11 +52,17 @@ class AutoDataProcessor:
             6: checkerAssumptionOfhomoscedasticity}
         pass
 
+    def checkAssumptions(self):
+        for i in range(7):
+            print('='*90)
+            print (' '*35+'Assumption %s'%(i+1))
+            self.assumptionViolationDict[i].log()
+
+
     def autoTransformation(self):
         dfX = pd.DataFrame(self.X, columns=self.variableNameList)
 
         violationList = [self.assumptionViolationDict[key].violation for key in self.assumptionViolationDict.keys()]
-        print(violationList)
 
         if (violationList[0]) + (violationList[5]):
             print('No transformation of data')
@@ -134,7 +111,7 @@ class AutoDataProcessor:
 
         self.dfX = dfX[selected]
         print('selected features are:', selected)
-        return selected
+        return self.dfX.values
 
 
 if __name__ == '__main__':
@@ -151,41 +128,19 @@ if __name__ == '__main__':
 	outcome
 	"""
 
-    n = 500
+    from utility import generateRandomData
 
-    x0 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
-    x1 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
-    x2 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
-    x3 = (np.random.random(size=n) * 2 - 1).reshape(-1, 1)
-    x4 = 3 * x2 - x1
-    x5 = np.random.rand(n).reshape(-1, 1)
-
-    X = np.concatenate([x0, x1, x2, x3, x4], axis=1)
-    y = -x0 + x1**4 + x2 + 0 * x3 + x4 + x5
-
-
-    regr = LinearRegression().fit(X, y)
-    y_pred = regr.predict(X)
-
-    mse = mean_squared_error(y, y_pred)
-    r2 = r2_score(y, y_pred)
-
-    print(mse, r2)
+    X, y = generateRandomData(n=100)
 
     print('='*90)
     AutoDataProcessorObj = AutoDataProcessor(X, y)
 
+    print('='*90)
+    AutoDataProcessorObj.checkAssumptions()
 
     print('='*90)
     print('Start Transform data')
     AutoDataProcessorObj.autoTransformation()
 
-    regr = LinearRegression().fit(AutoDataProcessorObj.dfX, y)
-    y_pred = regr.predict(AutoDataProcessorObj.dfX)
-
-    mse = mean_squared_error(y, y_pred)
-    r2 = r2_score(y, y_pred)
-
-    print(mse, r2)
-    print('='*90)
-    AutoDataProcessor(AutoDataProcessorObj.dfX, y, variableNameList=AutoDataProcessorObj.dfX.columns)
+    #print('='*90)
+    #AutoDataProcessor(AutoDataProcessorObj.dfX, y, variableNameList=AutoDataProcessorObj.dfX.columns)
